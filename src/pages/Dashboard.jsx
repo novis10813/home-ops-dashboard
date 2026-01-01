@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Key, Database, Archive, Plug, AlertCircle } from 'lucide-react';
 import { getSystemStatus } from '../services/gatewayApi';
 import { getPortMappings } from '../services/dockerApi';
 
@@ -47,7 +48,11 @@ function Dashboard() {
     if (error) {
         return (
             <div className="error-message">
-                ❌ 無法連接到服務: {error}
+                <AlertCircle />
+                <div>
+                    <strong>無法連接到服務</strong>
+                    <p style={{ marginTop: '0.25rem', fontSize: '0.875rem' }}>{error}</p>
+                </div>
             </div>
         );
     }
@@ -61,7 +66,9 @@ function Dashboard() {
 
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon primary">🔑</div>
+                    <div className="stat-icon primary">
+                        <Key />
+                    </div>
                     <div className="stat-info">
                         <h3>{status?.total_active_keys || 0}</h3>
                         <p>Active API Keys</p>
@@ -69,7 +76,9 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon success">✅</div>
+                    <div className="stat-icon success">
+                        <Database />
+                    </div>
                     <div className="stat-info">
                         <h3>{status?.database_keys_count || 0}</h3>
                         <p>Database Keys</p>
@@ -77,7 +86,9 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon warning">📦</div>
+                    <div className="stat-icon warning">
+                        <Archive />
+                    </div>
                     <div className="stat-info">
                         <h3>{status?.legacy_keys_count || 0}</h3>
                         <p>Legacy Keys</p>
@@ -85,7 +96,9 @@ function Dashboard() {
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon primary">🔌</div>
+                    <div className="stat-icon info">
+                        <Plug />
+                    </div>
                     <div className="stat-info">
                         <h3>{ports.length}</h3>
                         <p>Active Ports</p>

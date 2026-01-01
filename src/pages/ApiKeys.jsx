@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Key, Plus, Copy, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { listApiKeys, createApiKey, deactivateApiKey } from '../services/gatewayApi';
 
 function ApiKeys() {
@@ -83,24 +84,21 @@ function ApiKeys() {
                 <p>管理 Gateway API 的 API Keys</p>
             </div>
 
-            {error && <div className="error-message">❌ {error}</div>}
+            {error && (
+                <div className="error-message">
+                    <AlertCircle />
+                    <span>{error}</span>
+                </div>
+            )}
 
             {createdKey && (
-                <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'var(--success)' }}>
-                    <h4 style={{ color: 'var(--success)', marginBottom: '0.5rem' }}>✅ API Key 建立成功！</h4>
-                    <p style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>
-                        請立即複製此 Key，之後將無法再次查看完整內容：
-                    </p>
-                    <code style={{
-                        display: 'block',
-                        padding: '1rem',
-                        background: 'var(--bg-primary)',
-                        borderRadius: 'var(--radius-md)',
-                        wordBreak: 'break-all',
-                        fontSize: '1rem'
-                    }}>
-                        {createdKey.api_key}
-                    </code>
+                <div className="success-message">
+                    <h4>
+                        <CheckCircle2 size={20} />
+                        API Key 建立成功！
+                    </h4>
+                    <p>請立即複製此 Key，之後將無法再次查看完整內容：</p>
+                    <code>{createdKey.api_key}</code>
                     <button
                         className="btn btn-primary btn-sm"
                         style={{ marginTop: '1rem' }}
@@ -109,7 +107,8 @@ function ApiKeys() {
                             setCreatedKey(null);
                         }}
                     >
-                        📋 複製並關閉
+                        <Copy size={16} />
+                        複製並關閉
                     </button>
                 </div>
             )}
@@ -118,7 +117,8 @@ function ApiKeys() {
                 <div className="card-header">
                     <h3 className="card-title">API Keys 列表</h3>
                     <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                        ➕ 新增 API Key
+                        <Plus size={18} />
+                        新增 API Key
                     </button>
                 </div>
 
@@ -137,9 +137,13 @@ function ApiKeys() {
                         <tbody>
                             {keys.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="empty-state">
-                                        <div className="empty-state-icon">🔑</div>
-                                        目前沒有 API Keys
+                                    <td colSpan="6">
+                                        <div className="empty-state">
+                                            <div className="empty-state-icon">
+                                                <Key size={48} />
+                                            </div>
+                                            <p>目前沒有 API Keys</p>
+                                        </div>
                                     </td>
                                 </tr>
                             ) : (
@@ -148,7 +152,7 @@ function ApiKeys() {
                                         <td>
                                             <strong>{key.name}</strong>
                                             <br />
-                                            <code style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                            <code style={{ fontSize: '0.75rem' }}>
                                                 {key.key_masked}
                                             </code>
                                         </td>
@@ -223,10 +227,12 @@ function ApiKeys() {
                                 </div>
                             </div>
                             <div className="modal-actions">
-                                <button type="button" className="btn btn-danger" onClick={() => setShowModal(false)}>
+                                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                                    <X size={18} />
                                     取消
                                 </button>
                                 <button type="submit" className="btn btn-primary">
+                                    <Plus size={18} />
                                     建立
                                 </button>
                             </div>

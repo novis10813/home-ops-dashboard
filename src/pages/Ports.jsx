@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Plug, AlertCircle } from 'lucide-react';
 import { getPortMappings } from '../services/dockerApi';
 
 function Ports() {
@@ -40,17 +41,23 @@ function Ports() {
 
             {error && (
                 <div className="error-message">
-                    ❌ 無法取得 Port 資訊: {error}
-                    <p style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>
-                        請確認 Docker API 服務正常運行，且已正確掛載 docker.sock。
-                    </p>
+                    <AlertCircle />
+                    <div>
+                        <strong>無法取得 Port 資訊</strong>
+                        <p style={{ marginTop: '0.25rem', fontSize: '0.875rem' }}>{error}</p>
+                        <p style={{ marginTop: '0.5rem', fontSize: '0.8125rem', opacity: 0.8 }}>
+                            請確認 Docker API 服務正常運行，且已正確掛載 docker.sock。
+                        </p>
+                    </div>
                 </div>
             )}
 
             {!error && ports.length === 0 && (
                 <div className="card">
                     <div className="empty-state">
-                        <div className="empty-state-icon">🔌</div>
+                        <div className="empty-state-icon">
+                            <Plug size={48} />
+                        </div>
                         <p>目前沒有偵測到使用中的 Port</p>
                     </div>
                 </div>
@@ -78,39 +85,43 @@ function Ports() {
                 ))}
             </div>
 
-            <div className="card" style={{ marginTop: '2rem' }}>
-                <div className="card-header">
-                    <h3 className="card-title">Port 使用概覽</h3>
+            {ports.length > 0 && (
+                <div className="card" style={{ marginTop: '2rem' }}>
+                    <div className="card-header">
+                        <h3 className="card-title">Port 使用概覽</h3>
+                    </div>
+                    <div className="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>容器</th>
+                                    <th>外部 Port</th>
+                                    <th>內部 Port</th>
+                                    <th>協議</th>
+                                    <th>綁定 IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {ports.map((port, idx) => (
+                                    <tr key={idx}>
+                                        <td><strong>{port.container_name}</strong></td>
+                                        <td>{port.public_port}</td>
+                                        <td>{port.private_port}</td>
+                                        <td>{port.protocol?.toUpperCase()}</td>
+                                        <td>
+                                            <code style={{
+                                                color: port.ip === '0.0.0.0' ? 'var(--text-secondary)' : 'var(--warning)'
+                                            }}>
+                                                {port.ip || '0.0.0.0'}
+                                            </code>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>容器</th>
-                            <th>外部 Port</th>
-                            <th>內部 Port</th>
-                            <th>協議</th>
-                            <th>綁定 IP</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {ports.map((port, idx) => (
-                            <tr key={idx}>
-                                <td><strong>{port.container_name}</strong></td>
-                                <td>{port.public_port}</td>
-                                <td>{port.private_port}</td>
-                                <td>{port.protocol?.toUpperCase()}</td>
-                                <td>
-                                    <code style={{
-                                        color: port.ip === '0.0.0.0' ? 'var(--text-secondary)' : 'var(--warning)'
-                                    }}>
-                                        {port.ip || '0.0.0.0'}
-                                    </code>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            )}
         </div>
     );
 }
