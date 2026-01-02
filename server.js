@@ -101,7 +101,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // SPA fallback - serve index.html for all other routes (Express 5 compatible)
-app.get(/^\/(?!api).*/, (req, res) => {
+// Exclude /api and /internal (proxy to gateway)
+app.get(/^\/(?!api|internal).*/, (req, res) => {
     res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
