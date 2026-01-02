@@ -12,12 +12,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set environment variables for Vite build
-# VITE_GATEWAY_URL is baked into the bundle at build time
-ARG VITE_GATEWAY_URL=http://gateway:8000
-ENV VITE_GATEWAY_URL=$VITE_GATEWAY_URL
-
 # Build the frontend
+# Note: Frontend calls /internal on same origin, server.js proxies to gateway
 RUN npm run build
 
 # Production stage

@@ -3,6 +3,7 @@ import Docker from 'dockerode';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -10,8 +11,24 @@ const __dirname = dirname(__filename);
 const app = express();
 const docker = new Docker({ socketPath: '/var/run/docker.sock' });
 
+// Gateway API URL - uses Docker internal network in production
+const GATEWAY_URL = process.env.GATEWAY_API_URL || 'http://gateway:8000';
+
 app.use(cors());
 app.use(express.json());
+
+// Proxy /internal requests to Gateway API
+app.use('/internal', createProxyMiddleware({
+    target: GATEWAY_URL,
+    changeOrigin: true,
+    onError: (err, req, res) => {
+        console.error('Gateway proxy error:', err.message);
+        res.status(502).json({
+            error: 'Gateway unavailable',
+            details: err.message
+        });
+    }
+}));
 
 // Serve static files in production
 app.use(express.static(join(__dirname, 'dist')));
