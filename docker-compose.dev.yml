@@ -1,0 +1,23 @@
+# Development docker-compose for testing Dashboard
+# Connects to existing gateway_internal network (proxies stack)
+# Usage: docker compose -f docker-compose.dev.yml up --build
+
+services:
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dashboard-dev
+    ports:
+      - "3001:3000"  # Use 3001 to avoid conflict with production
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - GATEWAY_API_URL=http://gateway:8000
+      - NODE_ENV=development
+    networks:
+      - gateway_internal
+
+networks:
+  gateway_internal:
+    external: true  # Use existing network from proxies stack

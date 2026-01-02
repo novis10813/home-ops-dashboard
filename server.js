@@ -21,12 +21,20 @@ app.use(express.json());
 app.use('/internal', createProxyMiddleware({
     target: GATEWAY_URL,
     changeOrigin: true,
-    onError: (err, req, res) => {
-        console.error('Gateway proxy error:', err.message);
-        res.status(502).json({
-            error: 'Gateway unavailable',
-            details: err.message
-        });
+    // Restore /internal prefix that Express strips when mounting at '/internal'
+    pathRewrite: (path, req) => '/internal' + path,
+    // v3 API: use 'on' object for event handlers
+    on: {
+        proxyReq: (proxyReq, req, res) => {
+            console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${GATEWAY_URL}${proxyReq.path}`);
+        },
+        error: (err, req, res) => {
+            console.error('Gateway proxy error:', err.message);
+            res.status(502).json({
+                error: 'Gateway unavailable',
+                details: err.message
+            });
+        }
     }
 }));
 
