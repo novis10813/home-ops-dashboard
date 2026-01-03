@@ -55,9 +55,13 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// SPA fallback - serve index.html for all other routes (Express 5 compatible)
-// Exclude /api and /internal (proxy to gateway)
-app.get(/^\/(?!api|internal).*/, (req, res) => {
+// SPA fallback - serve index.html for all other routes
+// This must be the LAST route handler
+app.use('*', (req, res, next) => {
+    // Skip API and internal routes
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/internal')) {
+        return next();
+    }
     res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
