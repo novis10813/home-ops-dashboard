@@ -28,6 +28,9 @@ RUN npm ci --omit=dev
 # Copy built frontend and server
 COPY --from=builder /app/dist ./dist
 COPY server.js ./
+COPY routes ./routes
+COPY services ./services
+COPY utils ./utils
 
 # Expose port
 EXPOSE 3000
