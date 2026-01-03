@@ -56,13 +56,18 @@ app.get('/api/health', (req, res) => {
 });
 
 // SPA fallback - serve index.html for all other routes
-// This must be the LAST route handler
-app.use('*', (req, res, next) => {
-    // Skip API and internal routes
+// This must be the LAST route handler (Express 5 compatible)
+app.use((req, res, next) => {
+    // Skip API and internal routes - they should 404 if not found
     if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/internal')) {
         return next();
     }
-    res.sendFile(join(__dirname, 'dist', 'index.html'));
+    // For all other GET requests, serve the SPA
+    if (req.method === 'GET') {
+        res.sendFile(join(__dirname, 'dist', 'index.html'));
+    } else {
+        next();
+    }
 });
 
 const PORT = process.env.PORT || 3000;
