@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import ApiKeys from './pages/ApiKeys';
-import Ports from './pages/Ports';
+import Services from './pages/Services';
+import Settings from './pages/Settings';
 import './index.css';
 
 function App() {
@@ -12,7 +13,8 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="api-keys" element={<ApiKeys />} />
-          <Route path="ports" element={<Ports />} />
+          <Route path="services" element={<Services />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
