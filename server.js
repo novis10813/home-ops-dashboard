@@ -32,6 +32,13 @@ app.use('/internal', createProxyMiddleware({
     on: {
         proxyReq: (proxyReq, req, res) => {
             console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${GATEWAY_URL}${proxyReq.path}`);
+            // Log request body for POST requests
+            if (req.method === 'POST' && req.body) {
+                console.log(`[Proxy] POST body:`, JSON.stringify(req.body));
+            }
+        },
+        proxyRes: (proxyRes, req, res) => {
+            console.log(`[Proxy] Response: ${proxyRes.statusCode} for ${req.method} ${req.originalUrl}`);
         },
         error: (err, req, res) => {
             console.error('Gateway proxy error:', err.message);
