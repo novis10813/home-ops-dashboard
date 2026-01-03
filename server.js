@@ -20,8 +20,8 @@ const app = express();
 const GATEWAY_URL = process.env.GATEWAY_API_URL || 'http://gateway:8000';
 
 app.use(cors());
-app.use(express.json());
 
+// IMPORTANT: Proxy MUST be before express.json() to preserve request body stream
 // Proxy /internal requests to Gateway API
 app.use('/internal', createProxyMiddleware({
     target: GATEWAY_URL,
@@ -32,10 +32,6 @@ app.use('/internal', createProxyMiddleware({
     on: {
         proxyReq: (proxyReq, req, res) => {
             console.log(`[Proxy] ${req.method} ${req.originalUrl} -> ${GATEWAY_URL}${proxyReq.path}`);
-            // Log request body for POST requests
-            if (req.method === 'POST' && req.body) {
-                console.log(`[Proxy] POST body:`, JSON.stringify(req.body));
-            }
         },
         proxyRes: (proxyRes, req, res) => {
             console.log(`[Proxy] Response: ${proxyRes.statusCode} for ${req.method} ${req.originalUrl}`);
@@ -49,6 +45,9 @@ app.use('/internal', createProxyMiddleware({
         }
     }
 }));
+
+// Parse JSON body AFTER proxy routes (so proxy can forward raw body)
+app.use(express.json());
 
 // Serve static files in production
 app.use(express.static(join(__dirname, 'dist')));
