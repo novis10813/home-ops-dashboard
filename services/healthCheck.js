@@ -38,31 +38,42 @@ export async function checkContainersHealth() {
 export async function getContainerStats() {
     try {
         const containers = await docker.listContainers();
-        const stats = [];
 
-        for (const container of containers) {
-            const containerObj = docker.getContainer(container.Id);
-            const stat = await containerObj.stats({ stream: false });
+        const statsPromises = containers.map(async (container) => {
+            try {
+                const containerObj = docker.getContainer(container.Id);
+                const stat = await containerObj.stats({ stream: false });
 
-            // Calculate CPU percentage
-            const cpuDelta = stat.cpu_stats.cpu_usage.total_usage - stat.precpu_stats.cpu_usage.total_usage;
-            const systemDelta = stat.cpu_stats.system_cpu_usage - stat.precpu_stats.system_cpu_usage;
-            const cpuPercent = (cpuDelta / systemDelta) * stat.cpu_stats.online_cpus * 100;
+                // Calculate CPU percentage
+                const cpuDelta = stat.cpu_stats.cpu_usage.total_usage - stat.precpu_stats.cpu_usage.total_usage;
+                const systemDelta = stat.cpu_stats.system_cpu_usage - stat.precpu_stats.system_cpu_usage;
+                const cpuPercent = systemDelta > 0 && cpuDelta > 0
+                    ? (cpuDelta / systemDelta) * stat.cpu_stats.online_cpus * 100
+                    : 0;
 
-            // Calculate memory usage
-            const memUsage = stat.memory_stats.usage;
-            const memLimit = stat.memory_stats.limit;
-            const memPercent = (memUsage / memLimit) * 100;
+                // Calculate memory usage
+                const memUsage = stat.memory_stats.usage;
+                const memLimit = stat.memory_stats.limit;
+                const memPercent = memLimit > 0 ? (memUsage / memLimit) * 100 : 0;
 
-            stats.push({
-                name: container.Names[0].replace('/', ''),
-                id: container.Id.substring(0, 12),
-                cpu_percent: cpuPercent.toFixed(2),
-                memory_usage: (memUsage / 1024 / 1024).toFixed(2), // MB
-                memory_limit: (memLimit / 1024 / 1024).toFixed(2), // MB
-                memory_percent: memPercent.toFixed(2),
-            });
-        }
+                return {
+                    name: container.Names[0].replace('/', ''),
+                    id: container.Id.substring(0, 12),
+                    cpu_percent: cpuPercent.toFixed(2),
+                    memory_usage: (memUsage / 1024 / 1024).toFixed(2), // MB
+                    memory_limit: (memLimit / 1024 / 1024).toFixed(2), // MB
+                    memory_percent: memPercent.toFixed(2),
+                };
+            } catch (err) {
+                console.warn(`Failed to get stats for container ${container.Names[0]}:`, err.message);
+                return null;
+            }
+        });
+
+        const results = await Promise.allSettled(statsPromises);
+        const stats = results
+            .filter(r => r.status === 'fulfilled' && r.value !== null)
+            .map(r => r.value);
 
         return stats;
     } catch (error) {
