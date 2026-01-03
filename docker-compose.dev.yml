@@ -12,6 +12,11 @@ services:
       - "3001:3000"  # Use 3001 to avoid conflict with production
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./server.js:/app/server.js
+      - ./routes:/app/routes
+      - ./services:/app/services
+      - ./utils:/app/utils
+      - ./src:/app/src  # Only helpful if running node dev mode, but good for reference
     environment:
       - GATEWAY_API_URL=http://gateway:8000
       - NODE_ENV=development
