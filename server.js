@@ -58,13 +58,22 @@ app.get('/api/health', (req, res) => {
 // SPA fallback - serve index.html for all other routes
 // This must be the LAST route handler (Express 5 compatible)
 app.use((req, res, next) => {
-    // Skip API and internal routes - they should 404 if not found
-    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/internal')) {
+    // Skip actual API routes (with trailing slash or exact match)
+    // Use /api/ (with slash) to avoid matching frontend routes like /api-keys
+    const isApiRoute = req.originalUrl.startsWith('/api/') || req.originalUrl === '/api';
+    const isInternalRoute = req.originalUrl.startsWith('/internal/') || req.originalUrl === '/internal';
+
+    if (isApiRoute || isInternalRoute) {
         return next();
     }
     // For all other GET requests, serve the SPA
     if (req.method === 'GET') {
-        res.sendFile(join(__dirname, 'dist', 'index.html'));
+        res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
+            if (err) {
+                console.error('SPA fallback sendFile error:', err);
+                next(err);
+            }
+        });
     } else {
         next();
     }
